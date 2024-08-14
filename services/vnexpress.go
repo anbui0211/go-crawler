@@ -1,10 +1,8 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/gocolly/colly"
@@ -36,29 +34,21 @@ func CrawlVnExpressFootball() {
 		// Page number
 		pageUrl := e.Request.URL.String()
 		data.PageNumber, _ = strconv.Atoi(pageUrl[len(pageUrl)-1:])
+		if data.PageNumber == 0 {
+			data.PageNumber = 1
+		}
 
 		dataList = append(dataList, data)
 	})
 
-	numPageCrawl := 3
+	numPageCrawl := 1
 	for i := 0; i < numPageCrawl; i++ {
 		fullUrl := fmt.Sprintf("https://vnexpress.net/bong-da-p%d", i)
 		c.Visit(fullUrl)
 	}
 
 	fileName := "./files/json/vn_express_football.json"
-
-	fmt.Println("Crawl success")
 	if err := WriteToJSONFile(fileName, dataList); err != nil {
 		log.Println("Crawl error: ", err.Error())
 	}
-}
-
-func WriteToJSONFile(fileName string, data interface{}) error {
-	jsonData, err := json.MarshalIndent(data, "", " ")
-	if err != nil {
-		log.Fatalf("Could not marshal data to JSON: %v", err)
-	}
-
-	return os.WriteFile(fileName, jsonData, 0644)
 }
